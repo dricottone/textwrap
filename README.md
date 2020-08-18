@@ -32,9 +32,23 @@ $ echo '12345' | textwrap -length 2
 ## Usage (library)
 
 ```go
-import ""
+import (
+	"fmt"
+	"regexp"
+	"git.dominic-ricottone.com/textwrap"
+)
 
-//TBD
+func main() {
+	a := []string{
+		"> hello!",
+		"> this is quoted",
+		"hi there!",
+		"this is not",
+	}
+	for _, line := range textwrap.wrap_array(a,10) {
+		fmt.Println(line)
+	}
+}
 ```
 
 

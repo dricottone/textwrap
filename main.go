@@ -12,26 +12,65 @@ import (
 
 const LINE_LENGTH = 80
 
-func print_break(length int) {
-	fmt.Printf("%s\n", strings.Repeat("-", length))
+func make_breakline(length int) string {
+	return strings.Repeat("-", length)
 }
 
-func print_wrapped(line string, length int, quote string) {
+func make_wrappedline(line string, length int, re_quote *regexp.Regexp) []string {
+	offset := 0
+	prefix := ""
+
+	quote := re_quote.FindString(line)
 	len_quote := len(quote)
-	buffer := quote
-	for index, rune := range line[len_quote:] {
-		buffer += string(rune)
-		if (index + 1) % (length - len_quote) == 0 {
-			fmt.Printf("%s\n", buffer)
-			buffer = quote
+	if len_quote != 0 && len_quote < length {
+		offset = len_quote
+		prefix = quote
+	}
+
+	buffer := []string{prefix}
+	line_number := 0
+	for index, rune := range line[offset:] {
+		buffer[line_number] += string(rune)
+		if (index + 1) % (length - offset) == 0 {
+			buffer = append(buffer, prefix)
+			line_number += 1
 		}
 	}
-	if buffer != "" {
-		fmt.Printf("%s\n", buffer)
-	}
+
+	return buffer
 }
 
-func textwrap_stream(reader io.Reader, length int) {
+func wrap_array(lines []string, length int) ([]string, error) {
+	// Compile regular expressions
+	re_quote, err := regexp.Compile("^([> ]*)")
+	if err != nil {
+		return nil, err
+	}
+	re_break, err := regexp.Compile("^(?:-{5,}|={5,})$")
+	if err != nil {
+		return nil, err
+	}
+
+	wrapped := []string{}
+
+	for i := 0; i < len(lines); i++ {
+		line := strings.TrimSpace(lines[i])
+
+		if len(line) > length {
+			if re_break.MatchString(line) {
+				wrapped = append(wrapped, make_breakline(length))
+			} else {
+				wrapped = append(wrapped, make_wrappedline(line, length, re_quote)...)
+			}
+		} else {
+			wrapped = append(wrapped, line)
+		}
+	}
+
+	return wrapped, nil
+}
+
+func wrap_stream(reader io.Reader, length int) {
 	// Create scanner from reader
 	input := bufio.NewScanner(reader)
 
@@ -54,10 +93,11 @@ func textwrap_stream(reader io.Reader, length int) {
 
 		if len(line) > length {
 			if re_break.MatchString(line) {
-				print_break(length)
+				fmt.Printf("%s\n", make_breakline(length))
 			} else {
-				quote := re_quote.FindString(line)
-				print_wrapped(line, length, quote)
+				for _, wrapped := range make_wrappedline(line, length, re_quote) {
+					fmt.Printf("%s\n", wrapped)
+				}
 			}
 		} else {
 			fmt.Printf("%s\n", line)
@@ -71,7 +111,7 @@ func textwrap_stream(reader io.Reader, length int) {
 	}
 }
 
-func textwrap_file(filename string) {
+func wrap_file(filename string) {
 	// Check file
 	file, err := os.Open(filename)
 	if err != nil {
@@ -80,7 +120,7 @@ func textwrap_file(filename string) {
 	}
 	defer file.Close()
 
-	textwrap_stream(file, LINE_LENGTH)
+	wrap_stream(file, LINE_LENGTH)
 }
 
 func main() {
@@ -95,6 +135,6 @@ func main() {
 	var length = flag.Int("length", LINE_LENGTH, "maximum length of lines")
 	flag.Parse()
 
-	textwrap_stream(os.Stdin, *length)
+	wrap_stream(os.Stdin, *length)
 }
 
