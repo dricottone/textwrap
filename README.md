@@ -35,7 +35,7 @@ $ echo '12345' | textwrap -length 2
 import (
 	"fmt"
 	"regexp"
-	"go.dominic-ricottone.com/textwrap"
+	"git.dominic-ricottone.com/textwrap"
 )
 
 func main() {
