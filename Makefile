@@ -1,5 +1,5 @@
 clean:
-	rm -rf textwrap
+	rm -rf textwrap go.sum
 
 build:
 	go build
