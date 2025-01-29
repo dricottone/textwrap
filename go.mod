@@ -1,3 +1,3 @@
-module git.dominic-ricottone.com/~dricottone/textwrap
+module git.sr.ht/~dricottone/textwrap
 
-go 1.19
+go 1.23.2
