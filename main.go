@@ -9,7 +9,7 @@ import (
 	"regexp"
 	"flag"
 
-	"git.sr.ht/~dricottone/textwrap/common"
+	"tangled.org/dominic-ricottone.com/textwrap/common"
 )
 
 const LINE_LENGTH = 80

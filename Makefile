@@ -5,7 +5,7 @@ clean:
 	rm -rf textwrap go.mod go.sum
 
 go.mod:
-	go mod init git.sr.ht/~dricottone/textwrap
+	go mod init tangled.org/dominic-ricottone.com/textwrap
 
 textwrap: go.mod $(GO_FILES)
 	go build
